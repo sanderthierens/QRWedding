@@ -1,0 +1,15 @@
+services:
+  photos:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./photos/uploads:/uploads
+    environment:
+      # Set this to your machine's local IP so the QR code points to the right address
+      # Find your IP with: hostname -I | awk '{print $1}'   (Linux)
+      #                or: ipconfig | grep "IPv4"            (Windows)
+      - APP_URL=http://192.168.0.249:3000
+      # Optional: customize your event name
+      - EVENT_NAME=Share your pics!
+    restart: unless-stopped
