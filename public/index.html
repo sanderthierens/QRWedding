@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#DCA1A1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="icon" type="image/png" href="/Aline_Sander.png">
+  <link rel="apple-touch-icon" href="/Aline_Sander.png">
+  <title>Event Photos</title>
+  <style>
+    :root {
+      --bg: #fae0e0;
+      --surface: #ffffff;
+      --surface2: #f1dfd8;
+      --accent: #DCA1A1;
+      --accent2: #c97b7b;
+      --text: #3a2a2a;
+      --text-muted: #9c8078;
+      --radius: 12px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100dvh;
+      overscroll-behavior: none;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--accent);
+      padding: 22px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: space-between;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.5);
+      backdrop-filter: blur(10px);
+    }
+
+    .header-title { display: flex; align-items: center; gap: 10px; }
+
+    .header-logo {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    header h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #000;
+    }
+
+    header h1 span { color: #000; }
+
+    .header-actions { display: flex; gap: 10px; }
+
+    .header-actions .btn-outline {
+      color: #000;
+      border-color: rgba(0,0,0,0.35);
+    }
+
+    .header-actions .btn-outline:hover { border-color: rgba(0,0,0,0.55); }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 16px;
+      border: none;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn:active { transform: scale(0.95); }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border: 1.5px solid rgba(0,0,0,0.15);
+    }
+
+    .btn-outline:hover { border-color: rgba(0,0,0,0.3); }
+
+    .upload-zone {
+      margin: 20px 16px 8px;
+      border: 2px dashed rgba(0,0,0,0.25);
+      border-radius: var(--radius);
+      padding: 28px 20px;
+      text-align: center;
+      transition: border-color 0.2s, background 0.2s;
+      cursor: pointer;
+      background: var(--accent);
+    }
+
+    .upload-zone.dragover {
+      border-color: #000;
+      background: #cf8f8f;
+    }
+
+    .upload-zone p { color: rgba(0,0,0,0.65); font-size: 0.9rem; margin-top: 8px; }
+
+    .upload-zone .upload-icon { font-size: 2.5rem; margin-bottom: 6px; }
+
+    #file-input { display: none; }
+
+    .progress-container {
+      margin: 12px 16px;
+      display: none;
+    }
+
+    .progress-bar-outer {
+      background: var(--surface2);
+      border-radius: 50px;
+      height: 8px;
+      overflow: hidden;
+    }
+
+    .progress-bar-inner {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 50px;
+      transition: width 0.2s;
+      width: 0%;
+    }
+
+    .progress-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+      text-align: center;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--surface);
+      color: var(--text);
+      padding: 12px 24px;
+      border-radius: 50px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      box-shadow: var(--shadow);
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      z-index: 1000;
+      white-space: nowrap;
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.success { border-color: #4caf50; }
+    .toast.error { border-color: var(--accent); }
+
+    .gallery-header {
+      padding: 16px 16px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .gallery-header h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .photo-count {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      background: var(--surface2);
+      padding: 4px 12px;
+      border-radius: 50px;
+    }
+
+    .gallery {
+      columns: 2;
+      column-gap: 8px;
+      padding: 0 8px 100px;
+    }
+
+    @media (min-width: 500px) { .gallery { columns: 3; } }
+    @media (min-width: 768px) { .gallery { columns: 4; } }
+    @media (min-width: 1024px) { .gallery { columns: 5; } }
+
+    .photo-item {
+      break-inside: avoid;
+      margin-bottom: 8px;
+      border-radius: var(--radius);
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      background: var(--surface2);
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .photo-item img {
+      width: 100%;
+      display: block;
+      object-fit: cover;
+      transition: transform 0.2s;
+    }
+
+    .photo-item:hover img { transform: scale(1.03); }
+
+    .photo-item .photo-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.6));
+      opacity: 0;
+      transition: opacity 0.2s;
+      display: flex;
+      align-items: flex-end;
+      padding: 8px;
+    }
+
+    .photo-item:hover .photo-overlay { opacity: 1; }
+
+    .photo-time {
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.8);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-state .empty-icon { font-size: 4rem; margin-bottom: 16px; }
+    .empty-state p { font-size: 1rem; }
+
+    /* Lightbox */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.95);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      touch-action: none;
+    }
+
+    .lightbox.open { display: flex; }
+
+    .lightbox-img-wrap {
+      max-width: 100vw;
+      max-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox img {
+      max-width: 100vw;
+      max-height: 100dvh;
+      object-fit: contain;
+      user-select: none;
+    }
+
+    .lightbox-close {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: #fff;
+      font-size: 1.4rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 510;
+      transition: background 0.2s;
+    }
+
+    .lightbox-close:hover { background: rgba(255,255,255,0.3); }
+
+    .lightbox-nav {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: #fff;
+      font-size: 1.6rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 510;
+      transition: background 0.2s;
+    }
+
+    .lightbox-nav:hover { background: rgba(255,255,255,0.3); }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+
+    .lightbox-counter {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,0.6);
+      font-size: 0.85rem;
+      z-index: 510;
+    }
+
+    /* QR Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 400;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border-radius: 20px;
+      padding: 32px 28px;
+      max-width: 360px;
+      width: 100%;
+      text-align: center;
+      position: relative;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(0,0,0,0.08);
+      animation: slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal h2 {
+      font-size: 1.3rem;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .modal p.subtitle {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      margin-bottom: 24px;
+    }
+
+    .qr-container {
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+
+    .qr-container img { display: block; width: 240px; height: 240px; }
+
+    .qr-url {
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.82rem;
+      color: var(--accent2);
+      word-break: break-all;
+      margin-bottom: 16px;
+      font-family: monospace;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.06);
+      border: none;
+      color: var(--text);
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(0,0,0,0.1);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 40px auto;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .refresh-indicator {
+      position: fixed;
+      bottom: 24px;
+      right: 20px;
+      background: var(--surface);
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 50px;
+      padding: 8px 14px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      z-index: 50;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-title">
+    <img class="header-logo" src="/Aline_Sander.png" alt="">
+    <h1><span id="event-name">Event Photos</span></h1>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-outline" id="qr-btn">🔲 QR Codes</button>
+  </div>
+</header>
+
+<input type="file" id="file-input" accept="image/*" multiple>
+
+<div class="upload-zone" id="upload-zone">
+  <div class="upload-icon">📷</div>
+  <strong>Tap to add your photos</strong>
+  <p>Share your memories from the event</p>
+</div>
+
+<div class="progress-container" id="progress-container">
+  <div class="progress-bar-outer">
+    <div class="progress-bar-inner" id="progress-bar"></div>
+  </div>
+  <div class="progress-label" id="progress-label">Uploading…</div>
+</div>
+
+<div class="gallery-header">
+  <h2>All Photos</h2>
+  <span class="photo-count" id="photo-count">0 photos</span>
+</div>
+
+<div class="gallery" id="gallery">
+  <div style="column-span: all; text-align: center; padding: 40px 0;">
+    <div class="spinner"></div>
+  </div>
+</div>
+
+<!-- QR Modal -->
+<div class="modal-backdrop" id="qr-backdrop">
+  <div class="modal">
+    <button class="modal-close" id="qr-close">✕</button>
+    <h2>📲 Scan to Join</h2>
+    <p class="subtitle">Guests can scan this QR code to upload and view photos</p>
+    <div class="qr-container">
+      <img id="qr-img" src="" alt="QR Code">
+    </div>
+    <div class="qr-url" id="qr-url"></div>
+    <button class="btn btn-outline" id="copy-url-btn" style="width:100%">📋 Copy Link</button>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lb-close">✕</button>
+  <button class="lightbox-nav lightbox-prev" id="lb-prev">‹</button>
+  <div class="lightbox-img-wrap">
+    <img id="lb-img" src="" alt="">
+  </div>
+  <button class="lightbox-nav lightbox-next" id="lb-next">›</button>
+  <div class="lightbox-counter" id="lb-counter"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let photos = [];
+  let hasLoadedOnce = false;
+  let lbIndex = 0;
+  let refreshTimer;
+  let touchStartX = 0;
+
+  const gallery = document.getElementById('gallery');
+  const photoCount = document.getElementById('photo-count');
+  const fileInput = document.getElementById('file-input');
+  const uploadZone = document.getElementById('upload-zone');
+  const progressContainer = document.getElementById('progress-container');
+  const progressBar = document.getElementById('progress-bar');
+  const progressLabel = document.getElementById('progress-label');
+  const lightbox = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lb-img');
+  const lbCounter = document.getElementById('lb-counter');
+  const qrBackdrop = document.getElementById('qr-backdrop');
+
+  // Init
+  async function init() {
+    const config = await fetch('/api/config').then(r => r.json()).catch(() => ({}));
+    if (config.eventName) {
+      document.getElementById('event-name').textContent = config.eventName;
+      document.title = config.eventName + ' — Photos';
+    }
+    await loadPhotos();
+    scheduleRefresh();
+  }
+
+  // Load photos
+  async function loadPhotos() {
+    try {
+      const data = await fetch('/api/photos').then(r => r.json());
+      if (!hasLoadedOnce || JSON.stringify(data.map(p => p.filename)) !== JSON.stringify(photos.map(p => p.filename))) {
+        photos = data;
+        renderGallery();
+      }
+      hasLoadedOnce = true;
+    } catch {
+      if (photos.length === 0) showEmptyState();
+    }
+  }
+
+  function scheduleRefresh() {
+    clearTimeout(refreshTimer);
+    refreshTimer = setTimeout(async () => {
+      await loadPhotos();
+      scheduleRefresh();
+    }, 15000);
+  }
+
+  function renderGallery() {
+    photoCount.textContent = `${photos.length} photo${photos.length !== 1 ? 's' : ''}`;
+    if (photos.length === 0) {
+      showEmptyState();
+      return;
+    }
+    gallery.innerHTML = '';
+    photos.forEach((photo, i) => {
+      const item = document.createElement('div');
+      item.className = 'photo-item';
+      const time = new Date(photo.uploadedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      item.innerHTML = `
+        <img src="/uploads/${photo.filename}" alt="${photo.originalName}" loading="lazy">
+        <div class="photo-overlay"><span class="photo-time">${time}</span></div>
+      `;
+      item.addEventListener('click', () => openLightbox(i));
+      gallery.appendChild(item);
+    });
+  }
+
+  function showEmptyState() {
+    gallery.innerHTML = `
+      <div style="column-span: all;">
+        <div class="empty-state">
+          <div class="empty-icon">🖼️</div>
+          <p>No photos yet — be the first to upload!</p>
+        </div>
+      </div>
+    `;
+  }
+
+  // Upload
+  uploadZone.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+
+  uploadZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadZone.classList.add('dragover');
+  });
+  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+  });
+
+  async function handleFiles(files) {
+    const images = [...files].filter(f => f.type.startsWith('image/'));
+    if (images.length === 0) { showToast('Please select image files', 'error'); return; }
+
+    progressContainer.style.display = 'block';
+    progressBar.style.width = '0%';
+    progressLabel.textContent = `Uploading ${images.length} photo${images.length > 1 ? 's' : ''}…`;
+
+    const formData = new FormData();
+    images.forEach(f => formData.append('photos', f));
+
+    try {
+      await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/upload');
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            const pct = Math.round((e.loaded / e.total) * 100);
+            progressBar.style.width = pct + '%';
+          }
+        };
+        xhr.onload = () => {
+          if (xhr.status === 200) resolve(JSON.parse(xhr.responseText));
+          else reject(new Error(JSON.parse(xhr.responseText).error || 'Upload failed'));
+        };
+        xhr.onerror = () => reject(new Error('Network error'));
+        xhr.send(formData);
+      });
+
+      progressBar.style.width = '100%';
+      progressLabel.textContent = 'Done!';
+      showToast(`✅ ${images.length} photo${images.length > 1 ? 's' : ''} uploaded!`, 'success');
+      fileInput.value = '';
+      await loadPhotos();
+    } catch (err) {
+      showToast('❌ ' + err.message, 'error');
+    } finally {
+      setTimeout(() => { progressContainer.style.display = 'none'; }, 1500);
+    }
+  }
+
+  // Lightbox
+  function openLightbox(index) {
+    lbIndex = index;
+    updateLightbox();
+    lightbox.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    lightbox.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function updateLightbox() {
+    const photo = photos[lbIndex];
+    lbImg.src = `/uploads/${photo.filename}`;
+    lbCounter.textContent = `${lbIndex + 1} / ${photos.length}`;
+  }
+
+  document.getElementById('lb-close').addEventListener('click', closeLightbox);
+  document.getElementById('lb-prev').addEventListener('click', () => {
+    lbIndex = (lbIndex - 1 + photos.length) % photos.length;
+    updateLightbox();
+  });
+  document.getElementById('lb-next').addEventListener('click', () => {
+    lbIndex = (lbIndex + 1) % photos.length;
+    updateLightbox();
+  });
+
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) closeLightbox();
+  });
+
+  // Touch swipe for lightbox
+  lightbox.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; }, { passive: true });
+  lightbox.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 50) {
+      if (dx < 0) { lbIndex = (lbIndex + 1) % photos.length; }
+      else { lbIndex = (lbIndex - 1 + photos.length) % photos.length; }
+      updateLightbox();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (!lightbox.classList.contains('open')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowRight') { lbIndex = (lbIndex + 1) % photos.length; updateLightbox(); }
+    if (e.key === 'ArrowLeft') { lbIndex = (lbIndex - 1 + photos.length) % photos.length; updateLightbox(); }
+  });
+
+  // QR Code modal
+  document.getElementById('qr-btn').addEventListener('click', async () => {
+    qrBackdrop.classList.add('open');
+    const qrImg = document.getElementById('qr-img');
+    if (!qrImg.src || qrImg.src === window.location.href) {
+      const data = await fetch('/api/qr').then(r => r.json()).catch(() => null);
+      if (data) {
+        qrImg.src = data.qr;
+        document.getElementById('qr-url').textContent = data.url;
+      }
+    }
+  });
+
+  document.getElementById('qr-close').addEventListener('click', () => qrBackdrop.classList.remove('open'));
+  qrBackdrop.addEventListener('click', (e) => {
+    if (e.target === qrBackdrop) qrBackdrop.classList.remove('open');
+  });
+
+  document.getElementById('copy-url-btn').addEventListener('click', async () => {
+    const url = document.getElementById('qr-url').textContent;
+    try {
+      await navigator.clipboard.writeText(url);
+      showToast('✅ Link copied!', 'success');
+    } catch {
+      showToast('URL: ' + url);
+    }
+  });
+
+  // Toast
+  let toastTimer;
+  function showToast(message, type = '') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = 'toast show' + (type ? ' ' + type : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  init();
+</script>
+</body>
+</html>
